@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Simple Reversi</title>
+  <style>
+    #board {
+      display: flex;
+      flex-wrap: wrap;
+      width: 336px;
+    }
+
+    .cell {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #000;
+      background-color: green;
+      line-height: 40px;
+      text-align: center;
+      font-size: 30px;
+    }
+
+    .possible {
+      background-color: #ffcccc;
+    }
+  </style>
+</head>
+
+<body>
+  <button onclick="location.href='index.html'">戻る</button>
+  <button onclick="init()">Reset</button>
+  <div id="turn"></div>
+  <div id="board"></div>
+  <button onclick="pass()">Pass</button>
+  <script>
+    var b = [], s = 8, p1_icon = '😀', p2_icon = '🤖', p1_name = p1_icon, p2_name = p2_icon, t = p1_icon, d = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]], gameOver = false;
+    var clickSound = new Audio('./sound/click.mp3');
+    var buzzerSound = new Audio('./sound/buzzer.mp3');
+    var winSound = new Audio('./sound/win.mp3');
+    var loseSound = new Audio('./sound/lose.mp3');
+    function init() {
+      for (var i = 0; i < s; i++) {
+        b[i] = [];
+        for (var j = 0; j < s; j++) {
+          b[i][j] = '';
+        }
+      }
+      b[s / 2 - 1][s / 2 - 1] = b[s / 2][s / 2] = p1_icon;
+      b[s / 2 - 1][s / 2] = b[s / 2][s / 2 - 1] = p2_icon;
+      updateBoard();
+    }
+    function updateBoard() {
+      var html = '';
+      for (var i = 0; i < s; i++) {
+        for (var j = 0; j < s; j++) {
+          html += '<div class="cell ' + (b[i][j] === '' && flipStones(i, j, true) ? 'possible' : '') + '" onclick="clickCell(' + i + ', ' + j + ')">' + b[i][j] + '</div>';
+        }
+      }
+      document.getElementById('board').innerHTML = html;
+      document.getElementById('turn').innerText = 'Turn: ' + t;
+      checkGameOver();
+      if (!gameOver && t === p2_icon) {
+        setTimeout(aiTurn, 500);
+      }
+    }
+    function aiTurn() {
+      var possibleMoves = [];
+      for (var i = 0; i < s; i++) {
+        for (var j = 0; j < s; j++) {
+          if (b[i][j] === '' && flipStones(i, j, true)) {
+            possibleMoves.push([i, j]);
+          }
+        }
+      }
+      if (possibleMoves.length > 0) {
+        var move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        clickCell(move[0], move[1]);
+      } else {
+        pass();
+      }
+    }
+
+    function clickCell(i, j) {
+      if (b[i][j] === '' && flipStones(i, j, false)) {
+        b[i][j] = t;
+        t = t === p1_icon ? p2_icon : p1_icon;
+        clickSound.play();
+        updateBoard();
+      } else {
+        buzzerSound.play();
+      }
+    }
+    function flipStones(i, j, checkOnly) {
+      var flipped = false;
+      for (var k = 0; k < d.length; k++) {
+        var x = i + d[k][0], y = j + d[k][1], flip = false;
+        while (x >= 0 && x < s && y >= 0 && y < s && b[x][y] === (t === p1_icon ? p2_icon : p1_icon)) {
+          x += d[k][0];
+          y += d[k][1];
+          flip = true;
+        }
+        if (flip && x >= 0 && x < s && y >= 0 && y < s && b[x][y] === t) {
+          if (!checkOnly) {
+            x = i + d[k][0];
+            y = j + d[k][1];
+            while (x >= 0 && x < s & y < s && b[x][y] === (t === p1_icon ? p2_icon : p1_icon)) {
+              b[x][y] = t;
+              x += d[k][0];
+              y += d[k][1];
+            }
+          }
+          flipped = true;
+        }
+      }
+      return flipped;
+    }
+    function pass() {
+      for (var i = 0; i < s; i++) {
+        for (var j = 0; j < s; j++) {
+          if (b[i][j] === '' && flipStones(i, j, true)) {
+            return;
+          }
+        }
+      }
+      t = t === p1_icon ? p2_icon : p1_icon;
+      updateBoard();
+    }
+    function checkGameOver() {
+      var p1 = 0, p2 = 0, empty = 0;
+      for (var i = 0; i < s; i++) {
+        for (var j = 0; j < s; j++) {
+          if (b[i][j] === p1_icon) p1++;
+          if (b[i][j] === p2_icon) p2++;
+          if (b[i][j] === '') empty++;
+        }
+      }
+      if (empty === 0 && !gameOver) {
+        gameOver = true;
+        if (p1 > p2) {
+          winSound.play();
+        } else if (p2 > p1) {
+          loseSound.play();
+        }
+        setTimeout(function () {
+          alert('Game Over. ' + p1_name + ': ' + p1 + ', ' + p2_name + ': ' + p2 + '. ' + (p1 > p2 ? p1_name + ' wins!' : p2 > p1 ? p2_name + ' wins!' : 'It\'s a draw!'));
+        }, 300);
+      }
+    }
+    init();
+  </script>
+</body>
+
+</html>

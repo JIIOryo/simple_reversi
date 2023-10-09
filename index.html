@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Reversi</title>
+    <style>
+      #board {
+        display: flex;
+        flex-wrap: wrap;
+        width: 336px;
+      }
+
+      .cell {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #000;
+        background-color: green;
+        line-height: 40px;
+        text-align: center;
+        font-size: 30px;
+      }
+
+      .possible {
+        background-color: #ffcccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="board"></div>
+    <button onclick="location.href='reversi.html'">対人戦</button>
+    <button onclick="location.href='reversi_ai.html'">対AI戦</button>
+  </body>
+</html>
